@@ -34,7 +34,7 @@ namespace ft
 			return (*_ptr);
 		}
 		pointer operator->() const {
-			return &(operator*());
+			return &(this->operator*());
 		}
 		vectorIterator& operator++() {
 			++_ptr;
@@ -74,6 +74,7 @@ namespace ft
 		private :
 			pointer _ptr;
 	};
+
 	template <class T>
 	bool operator!=(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
 			return (lhs.base() != rhs.base());
@@ -179,8 +180,11 @@ namespace ft
 			clear();
 			//if (_capacity != 0)
 			//	_alloc.deallocate(_start, _capacity);
-			_start = _alloc.allocate(x._capacity);
-			_capacity = x._capacity;
+			if (_capacity < x.capacity())
+			{
+				_start = _alloc.allocate(x._size);
+				_capacity = x._size;
+			}
 			_size = x._size;
 			i = 0;
 			while (i < x._size)
@@ -215,18 +219,19 @@ namespace ft
 					i++;
 				}
 				_size = n;
+				
 			}
 			else if (n > _size)
 			{
 				//reserve~~~~
-				if (_capacity < _size + n && _size + n < _capacity * 2)//_capacity =< _size + n < _capacity * 2
+				if (_capacity < n && n < _capacity * 2)//_capacity =< _size + n < _capacity * 2
 				{
 					_capacity *= 2;
 					reserve(_capacity);
 				}
-				else if (_size + n > _capacity * 2)
+				else if (n > _capacity * 2)
 				{
-					_capacity = _size + n;
+					_capacity = n;
 					reserve(_capacity);
 				}
 				while (_size + i < n)
@@ -273,35 +278,37 @@ namespace ft
 
 		// Modifiers
 		void assign (size_type n, const value_type& val){
-			//clear();
 			size_type i = 0;
 			while (i < _size)
 			{
 				_alloc.destroy(_start + i);
 				i++;
 			}
-			_alloc.deallocate(_start, _capacity);
-			_start = _alloc.allocate(n);
-			_capacity = n;
+			if (_capacity < n)
+			{
+				_alloc.deallocate(_start, _capacity);
+				_start = _alloc.allocate(n);
+				_capacity = n;//
+			}
 			_size = n;
 			std::uninitialized_fill(_start, _start + n, val);
 		};
 		template <class InputIterator>
 		void assign(InputIterator first, InputIterator last, typename enable_if<!is_integral<InputIterator>::value>::type* = 0){
-			//살.려.주.세.요.
-			//clear();
+			//새 벡터 크기 가 현재 벡터 용량을 초과하는 경우에만 할당된 저장 공간이 자동으로 재할당됩니다.
 			size_type i = 0;
 			while (i < _size)
 			{
 				_alloc.destroy(_start + i);
 				i++;
 			}
-			_alloc.deallocate(_start, _capacity);
-			_start = _alloc.allocate(std::distance(first, last));
+			if (_capacity < static_cast<size_type>(std::distance(first, last)))
+			{
+				_alloc.deallocate(_start, _capacity);
+				_start = _alloc.allocate(std::distance(first, last));
+				_capacity = std::distance(first, last);//
+			}
 			std::uninitialized_copy(first, last, _start);
-			//_capacity = last - first;
-			//_size = last - first;
-			_capacity = std::distance(first, last);
 			_size = std::distance(first, last);
 		};
 		void push_back(const value_type &val){
@@ -349,9 +356,9 @@ namespace ft
 			pointer new_alloc = _alloc.allocate(_capacity);
 			difference_type new_position = position - begin();
 			
-				std::uninitialized_copy(begin(), position, new_alloc);
-				std::uninitialized_fill(new_alloc + new_position, new_alloc + new_position + n, val);
-				std::uninitialized_copy(position, end(), new_alloc + new_position + n);
+			std::uninitialized_copy(begin(), position, new_alloc);
+			std::uninitialized_fill(new_alloc + new_position, new_alloc + new_position + n, val);
+			std::uninitialized_copy(position, end(), new_alloc + new_position + n);
 			
 			size_type i = 0;
 			while (i < _size)
@@ -366,10 +373,11 @@ namespace ft
 		template <class InputIterator>
 		void insert(iterator position, InputIterator first, InputIterator last, typename enable_if<!is_integral<InputIterator>::value>::type* = 0){
 			size_type new_capa = _capacity;
+			
 			if (_capacity * 2 > _size + std::distance(first, last))
 				new_capa *= 2;
-			else
-				new_capa += std::distance(first, last);
+			else if(_size + std::distance(first, last) > _capacity)
+				new_capa = _size + std::distance(first, last);
 				
 			pointer new_alloc = _alloc.allocate(new_capa);
 			difference_type new_position = position - begin();
