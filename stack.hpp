@@ -20,7 +20,7 @@ namespace ft
         void push(const value_type &val) {c.push_back(val);};
         void pop() {c.pop_back();};
 
-        private:
+        protected:
         container_type c;
         template <class T1, class C1>
         friend bool operator==(const stack<T1, C1> &lhs, const stack<T1, C1> &rhs);
