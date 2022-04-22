@@ -164,7 +164,8 @@ namespace ft
 				_alloc.destroy(_start + i);
 				i++;
 			}
-			_alloc.deallocate(0, _capacity);
+			if (_capacity > 0)
+				_alloc.deallocate(0, _capacity);
 		};
 		vector& operator= (const vector& x){
 			//먼저 있는 거 다 비워주고
@@ -253,7 +254,8 @@ namespace ft
 				_alloc.construct(new_start + i, *(_start + i));
 				i++;
 			}
-			_alloc.deallocate(_start, _capacity);
+			if (_capacity > 0)
+				_alloc.deallocate(_start, _capacity);
 			_start = new_start;
 			_capacity = n;
 		}
@@ -284,7 +286,8 @@ namespace ft
 			}
 			if (_capacity < n)
 			{
-				_alloc.deallocate(_start, _capacity);
+				if (_capacity > 0)
+					_alloc.deallocate(_start, _capacity);
 				_start = _alloc.allocate(n);
 				_capacity = n;//
 			}
@@ -302,7 +305,8 @@ namespace ft
 			}
 			if (_capacity < static_cast<size_type>(std::distance(first, last)))
 			{
-				_alloc.deallocate(_start, _capacity);
+				if (_capacity > 0)
+					_alloc.deallocate(_start, _capacity);
 				_start = _alloc.allocate(std::distance(first, last));
 				_capacity = std::distance(first, last);//
 			}

@@ -6,7 +6,6 @@
 #include "util.hpp"
 #include <limits>
 
-
 namespace ft{
 	template <class T>
 	class node {
@@ -280,45 +279,47 @@ namespace ft{
 		public :
 		tree(){
 			_alloc = alloc();//pair<>
-			dummy = _alloc.allocate(1);
-			_alloc.construct(dummy, node<T>());//위치, 노드
-			root = NULL;
+			_dummy = _alloc.allocate(1);
+			_alloc.construct(_dummy, node<T>());//위치, 노드
+			_root = NULL;
+			_comp = Compare();//
 		}
 		~tree(){
-			// _alloc.destroy(dummy);
-			// _alloc.deallocate(dummy, 1);
+			//clear();
+			//_alloc.destroy(_dummy);
+			//_alloc.deallocate(_dummy, 1);
 		};
 		tree(const ft::tree<T, Compare, Alloc> &origin){ *this = origin;}
 		tree &operator=(const ft::tree<T, Compare, Alloc> &origin)
 		{
-			if (root)
+			if (_root)
 				clear();
-			// this->dummy = origin.dummy;
+			// this->_dummy = origin._dummy;
 			const_iterator i = origin.begin();//
 			while (i != origin.end())
 			{
 				this->insert(*i);
 			 	i++;
 			}
-
 			return (*this);
 		}
 		pointer search(const T insert_pair)
 		{
-			pointer i = root;
+			pointer i = _root;
 
-			if (!root)
-				return (dummy);
+			if (!_root)
+				return (_dummy);
 			while (i->right != NULL || i->left != NULL)//자식 노드가 존재할 동안. != 둘다
 			{
 				if (i->value.first == insert_pair.first)
 					return (i);
-				if (i->right != NULL && i->value.first < insert_pair.first){
+
+				if (i->right != NULL && _comp(i->value.first, insert_pair.first))
+				//if (i->right != NULL && i->value.first < insert_pair.first)
 					i = i->right;
-				}
-				else if (i->left != NULL && i->value.first > insert_pair.first){
+				else if (i->left != NULL && _comp(insert_pair.first, i->value.first ))
+				//else if (i->left != NULL && i->value.first > insert_pair.first)
 					i = i->left;
-				}
 				else
 					return i;
 			}
@@ -329,17 +330,18 @@ namespace ft{
 			pointer where = search(insert_pair);
 			pointer insert_node = NULL;
 
-			if (where != dummy && where->value.first == insert_pair.first)
+			if (where != _dummy && where->value.first == insert_pair.first)
 				return (ft::pair<treeIterator<T>, bool>(treeIterator<T>(where), false));
 			insert_node = _alloc.allocate(1);
-			if (where == dummy)
+			if (where == _dummy)
 			{
 				_alloc.construct(insert_node, node<T>(insert_pair, where, NULL, NULL));
-				root = insert_node;
-				dummy->left = root;
+				_root = insert_node;
+				_dummy->left = _root;
 				return(pair<treeIterator<T>, bool>(treeIterator<T>(insert_node), true));
 			}
-			if (where->value.first < insert_pair.first)
+			if (_comp(where->value.first, insert_pair.first))
+//			if (where->value.first < insert_pair.first)
 			{
 				_alloc.construct(insert_node, node<T>(insert_pair, where, NULL, NULL));
 				where->right = insert_node;
@@ -353,26 +355,26 @@ namespace ft{
 			}
 		}
 		iterator begin() {
-			pointer tmp = root;
-			if (!root)
-				return (dummy);
+			pointer tmp = _root;
+			if (!_root)
+				return (_dummy);
 			while (tmp->left != NULL)
 				tmp = tmp->left;
 			return iterator(tmp);
 		}
 		const_iterator begin() const{
-			pointer tmp = root;
-			if (!root)
-				return (dummy);
+			pointer tmp = _root;
+			if (!_root)
+				return (_dummy);
 			while (tmp->left != NULL)
 				tmp = tmp->left;
 			return const_iterator(tmp);
 		}
 		iterator end() {
-			return iterator(dummy);
+			return iterator(_dummy);
 		}
 		const_iterator end() const {
-			return const_iterator(dummy);
+			return const_iterator(_dummy);
 		}
 		iterator find (const T& k_pair) {
 			iterator it = begin();
@@ -409,16 +411,15 @@ namespace ft{
 			pointer tmp = find(k_pair).base();
 			if (tmp == end().base())
 				return 0;
-			if (tmp == root && tmp->left == NULL && tmp->right == NULL)
+			if (tmp == _root && tmp->left == NULL && tmp->right == NULL)
 			{
 				_alloc.destroy(tmp);
 				_alloc.deallocate(tmp, 1);
-				dummy->left = NULL;
-				root = NULL;
+				_dummy->left = NULL;
+				_root = NULL;
 				return 1;
 			}
-			//노드 destroy, deallocate, dummy->left = NULL;
-			
+			//노드 destroy, deallocate, _dummy->left = NULL;
 			if (tmp->left == NULL && tmp->right == NULL)
 			{
 				if (tmp->parent->left == tmp)
@@ -435,8 +436,8 @@ namespace ft{
 				else
 					tmp->parent->right = tmp->left;
 				tmp->left->parent = tmp->parent;
-				if (tmp == root)
-					root = tmp->left;
+				if (tmp == _root)
+					_root = tmp->left;
 				_alloc.destroy(tmp);
 				_alloc.deallocate(tmp, 1);
 			}
@@ -447,8 +448,8 @@ namespace ft{
 				else
 					tmp->parent->right = tmp->right;
 				tmp->right->parent = tmp->parent;
-				if (tmp == root)
-					root = tmp->right;
+				if (tmp == _root)
+					_root = tmp->right;
 				_alloc.destroy(tmp);
 				_alloc.deallocate(tmp, 1);
 			}
@@ -483,11 +484,11 @@ namespace ft{
 			return 1;
 		}
 		void clear(){
-			if (!root)
+			if (!_root)
 				return ;
-			while (root->left != NULL || root->right != NULL)
+			while (_root->left != NULL || _root->right != NULL)
 			{
-				pointer i = root;
+				pointer i = _root;
 				while (i->left != NULL || i->right != NULL)
 				{
 					if (i->left != NULL)
@@ -502,17 +503,18 @@ namespace ft{
 				_alloc.destroy(i);
 				_alloc.deallocate(i, 1);
 			}
-			_alloc.destroy(root);
-			_alloc.deallocate(root, 1);
-			root = NULL;
-			dummy->left = NULL;
+			_alloc.destroy(_root);
+			_alloc.deallocate(_root, 1);
+			_root = NULL;
+			_dummy->left = NULL;
 		}
 		iterator lower_bound(const T &pair) {
 			//k 보다 같거나 큰 값 이터 반환
 			iterator i = begin();
 			while (i != end())
 			{
-				if (i->first >= pair.first)
+				if (!(_comp(i->first, pair.first)))
+				//if (i->first >= pair.first)
 					return (i);
 				i++;
 			}
@@ -523,7 +525,8 @@ namespace ft{
 			const_iterator i = begin();
 			while (i != end())
 			{
-				if (i->first >= pair.first)
+				if (!(_comp(i->first, pair.first)))
+				//if (i->first >= pair.first)
 					return (i);
 				i++;
 			}
@@ -533,7 +536,8 @@ namespace ft{
 			iterator i = begin();
 			while (i != end())
 			{
-				if (i->first > pair.first)
+				if ((_comp(pair.first, i->first)))
+				//if (i->first > pair.first)
 					return (i);
 				i++;
 			}
@@ -543,19 +547,35 @@ namespace ft{
 			const_iterator i = begin();
 			while (i != end())
 			{
-				if (i->first > pair.first)
+				if ((_comp(pair.first, i->first)))
+				//if (i->first > pair.first)
 					return (i);
 				i++;
 			}
 			return (i);
 		}
-		
+		void swap(ft::tree<T, Compare, Alloc> &origin){
+			alloc tmp_alloc = _alloc;
+			pointer tmp_root = _root;
+			pointer tmp_dummy = _dummy;
+			Compare tmp_comp = _comp;
+
+			this->_alloc = origin._alloc;
+			this->_root = origin._root;
+			this->_dummy = origin._dummy;
+			this->_comp = origin._comp;
+
+			origin._alloc = tmp_alloc;
+			origin._root = tmp_root;
+			origin._dummy = tmp_dummy;
+			origin._comp = tmp_comp;
+		}
 
 		private : 
 		alloc _alloc;
-		pointer root;//
-		pointer dummy;//
-		
+		pointer _root;//
+		pointer _dummy;//
+		Compare _comp;//
 	};
 
 	template < class Key, class T, class Compare = std::less<Key>, class Alloc = std::allocator<ft::pair<const Key,T> > >
@@ -683,7 +703,7 @@ namespace ft{
 		void swap (map& x){
 			std::swap(this->_alloc, x._alloc);
 			std::swap(this->_compare, x._compare);
-			std::swap(this->_tree, x._tree);
+			_tree.swap(x._tree);
 		};
 		void clear(){_tree.clear();}
 		key_compare key_comp() const {return(_compare);}
