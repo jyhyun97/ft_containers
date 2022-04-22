@@ -271,6 +271,7 @@ namespace ft{
 	template <class T, class Compare, class Alloc>
 	class tree {
 		typedef typename ft::node<T>* 			pointer;
+		typedef typename ft::node<const T>* 	const_pointer;
 		typedef std::allocator< ft::node<T> >	alloc;
 		typedef typename Alloc::size_type		size_type;
 		typedef ft::treeIterator<T>				iterator;
@@ -289,17 +290,27 @@ namespace ft{
 			//_alloc.destroy(_dummy);
 			//_alloc.deallocate(_dummy, 1);
 		};
+
+		void preorder(iterator i){
+			if (i.base()->left || i.base()->right)
+			{
+				insert(*i);
+				if (i.base()->left)
+					preorder(i.base()->left);
+				if (i.base()->right)
+					preorder(i.base()->right);
+			}
+		}
+
 		tree(const ft::tree<T, Compare, Alloc> &origin){ *this = origin;}
 		tree &operator=(const ft::tree<T, Compare, Alloc> &origin)
 		{
 			if (_root)
 				clear();
-			// this->_dummy = origin._dummy;
-			const_iterator i = origin.begin();//
-			while (i != origin.end())
+			if (origin._root)
 			{
-				this->insert(*i);
-			 	i++;
+				iterator i = origin._root;
+				preorder(i);
 			}
 			return (*this);
 		}
@@ -315,10 +326,8 @@ namespace ft{
 					return (i);
 
 				if (i->right != NULL && _comp(i->value.first, insert_pair.first))
-				//if (i->right != NULL && i->value.first < insert_pair.first)
 					i = i->right;
 				else if (i->left != NULL && _comp(insert_pair.first, i->value.first ))
-				//else if (i->left != NULL && i->value.first > insert_pair.first)
 					i = i->left;
 				else
 					return i;
