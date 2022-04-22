@@ -79,6 +79,7 @@ namespace ft
 	bool operator!=(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
 			return (lhs.base() != rhs.base());
 	}
+
 	template <class T>
 	bool operator==(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
 			return (lhs.base() == rhs.base());
@@ -148,12 +149,9 @@ namespace ft
 		template <class InputIterator>
 		vector(InputIterator first, InputIterator last, const allocator_type &alloc = allocator_type(), typename enable_if<!is_integral<InputIterator>::value>::type* = 0){
 			_alloc = alloc;
-			//_size = last - first;
 			_size = std::distance(first, last);
 			_capacity = _size;
 			_start = _alloc.allocate(_capacity);
-			//for (size_type i = 0; i < _size; i++)
-			//	_alloc.construct(_start + i, *(first + i));
 			std::uninitialized_copy(first, last , _start);
 		}
 		vector(const vector &x) : _size(0), _capacity(0){
@@ -383,13 +381,6 @@ namespace ft
 			difference_type new_position = position - begin();
 			std::uninitialized_copy(begin(), position, new_alloc);
 			std::uninitialized_copy(first, last , new_alloc + new_position);
-			// size_type i = 0;
-			// while (i < static_cast<size_type>(last - first))
-			// {
-			// 	_alloc.construct(new_alloc + new_position + i, *(first + i));
-
-			// 	i++;
-			// }
 			std::uninitialized_copy(position, end(), new_alloc + new_position + std::distance(first, last));
 			size_type i = 0;
 			while (i < _size)
@@ -422,8 +413,6 @@ namespace ft
 			//first ~ last 지워용
 			size_type i = 0;
 			
-			//destroy first
-			//construct first, last
 			while (first + i != end())
 			{
 				_alloc.destroy(first.base() + i);
