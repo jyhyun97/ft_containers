@@ -13,24 +13,25 @@ namespace ft{
 			typedef T value_type;
 			typedef node<T> *pointer;
 
-			node() : value(), parent(), left(), right(){};
-			node(value_type _value, pointer _parent, pointer _left, pointer _right) : value(_value), parent(_parent), left(_left), right(_right) {};
+			node() : value(), parent(), left(), right(), max_depth(){};
+			node(value_type _value, pointer _parent, pointer _left, pointer _right, int _max_depth) : value(_value), parent(_parent), left(_left), right(_right), max_depth(_max_depth) {};
 			node(const node &origin) {*this = origin;};
 			~node(){};
 			node &operator=(const node &origin) {
-				//pair
 				this->value = origin.value;
 				this->parent = origin.parent;
 				this->left = origin.left;
 				this->right = origin.right;
+				this->max_depth = origin.max_depth;
 				return (*this);
 			}
-			
-			value_type value;//페어
+			value_type value;
 			pointer parent;
 			pointer left;
-			pointer right;		
+			pointer right;
+			int		max_depth;
 	};
+
 	template <class T>
 	class const_treeIterator;
 
@@ -48,7 +49,6 @@ namespace ft{
 		treeIterator() { node = NULL; }
 		treeIterator(const node_pointer _node) : node(_node) {}
 		treeIterator(const treeIterator &origin) : node(origin.node) {}
-		//treeIterator(const ft::const_treeIterator<T> &origin) : node(origin.base()) {}
 		~treeIterator(){};
 		
 		treeIterator &operator=(const treeIterator &origin)
@@ -86,7 +86,6 @@ namespace ft{
 		}
 		treeIterator &operator--()
 		{
-			//만약 노드가 root면 더미 노드로 이동해야 하는데..
 			if (node->left == NULL && node->parent->parent == NULL)
 				node = node->parent;
 			else if (node->left != NULL)
@@ -126,10 +125,10 @@ namespace ft{
 		{
 			return node;
 		};
-
 	private:
 		node_pointer node;
 	};
+
 	template <class T>
 	bool operator!=(const ft::treeIterator<T> &lhs, const ft::treeIterator<T> &rhs)
 	{
@@ -279,22 +278,23 @@ namespace ft{
 
 		public :
 		tree(){
-			_alloc = alloc();//pair<>
+			_alloc = alloc();
 			_dummy = _alloc.allocate(1);
-			_alloc.construct(_dummy, node<T>());//위치, 노드
+			_alloc.construct(_dummy, node<T>());
 			_root = NULL;
-			_comp = Compare();//
+			_comp = Compare();
 		}
 		~tree(){
-			//clear();
-			//_alloc.destroy(_dummy);
-			//_alloc.deallocate(_dummy, 1);
+			//std::cout << "tree destructor" << std::endl;
+			clear();
+			_alloc.destroy(_dummy);
+			_alloc.deallocate(_dummy, 1);
 		};
 
 		void preorder(iterator i){
+			insert(*i);
 			if (i.base()->left || i.base()->right)
 			{
-				insert(*i);
 				if (i.base()->left)
 					preorder(i.base()->left);
 				if (i.base()->right)
@@ -334,6 +334,261 @@ namespace ft{
 			}
 			return (i);
 		};
+		int height(pointer p_root)
+		{
+			int l_tree, r_tree, rst;
+			if (!p_root)
+				return (0);
+			l_tree = height(p_root->left);
+			r_tree = height(p_root->right);
+			if (l_tree > r_tree)
+				rst = l_tree + 1;
+			else
+				rst = r_tree + 1;
+			return (rst);
+		}
+		
+		int height_diff(pointer p_root)
+		{
+			int l_tree = 0;
+			int r_tree = 0;
+
+			if (!p_root)
+				return (0);
+			if (p_root->left)
+				l_tree = p_root->left->max_depth;
+			if (p_root->right)
+				r_tree = p_root->right->max_depth;
+			return(l_tree - r_tree);
+		}
+
+		pointer LL(pointer i_node)
+		{
+			pointer main_node = i_node->left;
+			pointer right_node = i_node;
+			pointer left_node = i_node->left->left;
+
+			if (i_node->parent->left == i_node)
+				i_node->parent->left = main_node;
+			else if(i_node->parent->right == i_node)
+				i_node->parent->right = main_node;
+			main_node->parent = i_node->parent;
+
+			if (main_node->right)
+			{
+				right_node->left = main_node->right;
+				main_node->right->parent = right_node;
+			}
+			else
+				right_node->left = NULL;
+			
+			main_node->left = left_node;
+			left_node->parent = main_node;
+			main_node->right = right_node;
+			right_node->parent = main_node;
+
+			right_node->max_depth -= 2;
+			return (main_node);
+		}
+		pointer LR(pointer i_node)
+		{			
+			pointer main_node = i_node->left->right;
+			pointer left_node = i_node->left;
+			pointer right_node = i_node;
+
+			if (i_node->parent->left == i_node)
+				i_node->parent->left = main_node;
+			else if (i_node->parent->right == i_node)
+				i_node->parent->right = main_node;
+			main_node->parent = i_node->parent;
+			
+			if (main_node->left){
+				left_node->right = main_node->left;
+				main_node->left->parent = left_node;
+			}
+			else
+				left_node->right = NULL;
+			
+			if (main_node->right)
+			{
+				right_node->left = main_node->right;
+				main_node->right->parent = right_node;
+			}
+			else
+				right_node->left = NULL;
+
+			main_node->left = left_node;
+			left_node->parent = main_node;
+			main_node->right = right_node;
+			right_node->parent = main_node;
+			
+			main_node->max_depth += 1;
+			left_node->max_depth -= 1;
+			right_node->max_depth -= 2;
+
+			return (main_node);
+		}
+		pointer RR(pointer i_node)
+		{
+			pointer main_node = i_node->right;
+			pointer left_node = i_node;
+			pointer right_node = i_node->right->right;
+
+			if (i_node->parent->left == i_node)
+				i_node->parent->left = main_node;
+			else if(i_node->parent->right == i_node)
+				i_node->parent->right = main_node;
+			main_node->parent = i_node->parent;
+
+			if (main_node->left)
+			{
+				left_node->right = main_node->left;
+				main_node->left->parent = left_node;
+			}
+			else
+				left_node->right = NULL;
+			
+			main_node->left = left_node;
+			left_node->parent = main_node;
+			main_node->right = right_node;
+			right_node->parent = main_node;
+
+			left_node->max_depth -= 2;
+			return (main_node);
+
+		}
+		pointer RL(pointer i_node)
+		{
+			pointer main_node = i_node->right->left;
+			pointer left_node = i_node;
+			pointer right_node = i_node->right;
+
+			if (i_node->parent->left == i_node)
+				i_node->parent->left = main_node;
+			else if (i_node->parent->right == i_node)
+				i_node->parent->right = main_node;
+			main_node->parent = i_node->parent;
+
+			if (main_node->left){//left->right로..
+				left_node->right = main_node->left;
+				main_node->left->parent = left_node;
+			}
+			else
+				left_node->right = NULL;
+
+			if (main_node->right)
+			{
+				right_node->left = main_node->right;
+				main_node->right->parent = right_node;
+			}
+			else
+				right_node->left = NULL;
+			
+			main_node->left = left_node;
+			left_node->parent = main_node;
+			main_node->right = right_node;
+			right_node->parent = main_node;
+
+			main_node->max_depth += 1;
+			left_node->max_depth -= 2;
+			right_node->max_depth -= 1;
+			return (main_node);
+
+		}
+		
+		void depth_update_preorder(pointer i_node, int root_value){
+			if (!i_node)
+				return ;
+			if (i_node->left || i_node->right)
+			{
+				i_node->max_depth = root_value;
+				if (i_node->left)
+					depth_update_preorder(i_node->left, root_value - 1);
+				if (i_node->right)
+					depth_update_preorder(i_node->right, root_value - 1);
+			}
+		}
+
+		void depth_update(pointer i_node, int root_value){
+			
+			//root_value--;
+			//depth_update_preorder(i_node, root_value);
+			//std::cout << "root_value" << root_value << std::endl;
+
+			pointer i_parent = i_node->parent;
+			while (i_parent != _dummy)
+			{
+				if (i_node == i_parent->left)
+				{
+					if (i_parent->right && i_parent->right->max_depth >= root_value)
+						break;
+				}																									
+				else if (i_node == i_parent->right)
+				{
+					if (i_parent->left && i_parent->left->max_depth >= root_value)
+						break;
+				}
+				i_parent->max_depth = root_value;
+				i_node = i_node->parent;
+				i_parent = i_parent->parent;
+				root_value++;
+			}
+			// i_node 기준 중위 순회로 돌면서 root_value -1 씩
+			// i_node 부모들은 root_value + 1씩
+
+		};
+
+
+		void rebalance(pointer insert_node)
+		{
+			//node max_depth 갱신
+			pointer i_node = insert_node;
+			int depth = insert_node->max_depth;
+			while (i_node != _dummy)
+			{
+				if (i_node->parent->max_depth != i_node->max_depth)//
+					break;
+				i_node = i_node->parent;
+				depth++;
+				i_node->max_depth = depth;
+			}
+			i_node = insert_node;
+			int insu = 0;
+			
+			while (i_node != _dummy)
+			{
+				insu = height_diff(i_node);
+				if ((insu > 1 || insu < -1))
+					break;
+				i_node = i_node->parent;
+			}
+			//std::cout << "root" << _root->max_depth << std::endl;
+			if (i_node == _dummy)
+				return ;
+			if (insu > 1)
+			{
+				int root_depth = i_node->max_depth;
+				if (height_diff(i_node->left) >= 0)
+					depth_update(LL(i_node), root_depth);
+				else
+					depth_update(LR(i_node), root_depth);
+			}
+			else if (insu < -1)
+			{
+				int root_depth = i_node->max_depth;
+				//pointer tmp_parent = i_node->parent;
+
+				if (height_diff(i_node->right) >= 0)
+				{
+					depth_update(RL(i_node), root_depth);
+				}else{
+					depth_update(RR(i_node), root_depth);
+				}
+					//depth_update(tmp_parent->right, root_depth);
+			}
+			_root = _dummy->left;
+		}
+		
 
 		ft::pair<treeIterator<T>, bool> insert(const T &insert_pair){
 			pointer where = search(insert_pair);
@@ -344,22 +599,24 @@ namespace ft{
 			insert_node = _alloc.allocate(1);
 			if (where == _dummy)
 			{
-				_alloc.construct(insert_node, node<T>(insert_pair, where, NULL, NULL));
+				_alloc.construct(insert_node, node<T>(insert_pair, where, NULL, NULL, 0));
 				_root = insert_node;
 				_dummy->left = _root;
+				insert_node->max_depth++;
 				return(pair<treeIterator<T>, bool>(treeIterator<T>(insert_node), true));
 			}
 			if (_comp(where->value.first, insert_pair.first))
-//			if (where->value.first < insert_pair.first)
 			{
-				_alloc.construct(insert_node, node<T>(insert_pair, where, NULL, NULL));
+				_alloc.construct(insert_node, node<T>(insert_pair, where, NULL, NULL, 1));
 				where->right = insert_node;
+				rebalance(insert_node);
 				return (pair<treeIterator<T>, bool>(treeIterator<T>(insert_node), true));
 			}
 			else
 			{
-				_alloc.construct(insert_node, node<T>(insert_pair, where, NULL, NULL));
+				_alloc.construct(insert_node, node<T>(insert_pair, where, NULL, NULL, 1));
 				where->left = insert_node;
+				rebalance(insert_node);
 				return (ft::pair<treeIterator<T>, bool>(treeIterator<T>(insert_node), true));
 			}
 		}
@@ -467,7 +724,6 @@ namespace ft{
 				iterator tmp2(tmp);
 				--tmp2;
 				pointer left_max = tmp2.base();
-				//pointer left_max = (--iterator(tmp)).base();
 				tmp->value = left_max->value;
 				if (left_max->left != NULL)
 				{
@@ -643,7 +899,7 @@ namespace ft{
 			*this = x;
 		};
 		~map(){
-			clear();
+			
 		};
 		map& operator= (const map& x){
 			this->_tree = x._tree;

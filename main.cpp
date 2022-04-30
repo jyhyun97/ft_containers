@@ -2,7 +2,7 @@
 #include <string>
 #include <deque>
 
-#if 1 //CREATE A REAL STL EXAMPLE
+#if 0 //CREATE A REAL STL EXAMPLE
 	#include <map>
 	#include <stack>
 	#include <vector>
@@ -15,8 +15,9 @@
 
 #include <stdlib.h>
 
+
 //#define MAX_RAM 4294967296
-#define MAX_RAM 4294967296
+#define MAX_RAM 4294967
 #define BUFFER_SIZE 4096
 struct Buffer
 {
@@ -115,3 +116,31 @@ int main(int argc, char** argv) {
 	std::cout << std::endl;
 	return (0);
 }
+
+/*
+int main(int argc, char **argv)
+{
+	if (argc != 2)
+	 	return (0);
+	ft::map<int, int> test;
+	
+	srand(atoi(argv[1]));
+
+	for (int i = 0; i < 1000000; i++)
+	{
+		test.insert(ft::make_pair<int, int>(rand()/100, 1));
+	}
+	// test.insert(ft::make_pair<int, int>(3, 1));
+	// test.insert(ft::make_pair<int, int>(1, 1));
+	// test.insert(ft::make_pair<int, int>(2, 1));
+	// test.insert(ft::make_pair<int, int>(9, 1));
+	// test.insert(ft::make_pair<int, int>(8, 1));
+	// test.insert(ft::make_pair<int, int>(7, 1));
+	// test.insert(ft::make_pair<int, int>(6, 1));
+	// test.insert(ft::make_pair<int, int>(5, 1));
+	// test.insert(ft::make_pair<int, int>(4, 1));
+	// test.insert(ft::make_pair<int, int>(3, 1));
+	// test.insert(ft::make_pair<int, int>(2, 1));
+	// test.insert(ft::make_pair<int, int>(1, 1));
+	return (0);
+}*/
