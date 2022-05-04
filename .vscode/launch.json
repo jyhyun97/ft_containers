@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "Debug",
             "program": "/Users/jeonhyun/Desktop/42cursus/ft_containers/ft_containers",
-            "args": ["0"],
+            "args": ["16"],
             "cwd": "${workspaceFolder}"
         }
     ]

@@ -320,11 +320,10 @@ namespace ft{
 
 			if (!_root)
 				return (_dummy);
-			while (i->right != NULL || i->left != NULL)//자식 노드가 존재할 동안. != 둘다
+			while (i->right != NULL || i->left != NULL)
 			{
 				if (i->value.first == insert_pair.first)
 					return (i);
-
 				if (i->right != NULL && _comp(i->value.first, insert_pair.first))
 					i = i->right;
 				else if (i->left != NULL && _comp(insert_pair.first, i->value.first ))
@@ -364,6 +363,7 @@ namespace ft{
 
 		pointer LL(pointer i_node)
 		{
+			//std::cout << "LL" << std::endl;
 			pointer main_node = i_node->left;
 			pointer right_node = i_node;
 			pointer left_node = i_node->left->left;
@@ -392,6 +392,7 @@ namespace ft{
 		}
 		pointer LR(pointer i_node)
 		{			
+			//std::cout << "LR" << std::endl;
 			pointer main_node = i_node->left->right;
 			pointer left_node = i_node->left;
 			pointer right_node = i_node;
@@ -430,6 +431,7 @@ namespace ft{
 		}
 		pointer RR(pointer i_node)
 		{
+			//std::cout << "RR" << std::endl;
 			pointer main_node = i_node->right;
 			pointer left_node = i_node;
 			pointer right_node = i_node->right->right;
@@ -455,10 +457,10 @@ namespace ft{
 
 			left_node->max_depth -= 2;
 			return (main_node);
-
 		}
 		pointer RL(pointer i_node)
 		{
+			//std::cout << "RL" << std::endl;
 			pointer main_node = i_node->right->left;
 			pointer left_node = i_node;
 			pointer right_node = i_node->right;
@@ -469,7 +471,7 @@ namespace ft{
 				i_node->parent->right = main_node;
 			main_node->parent = i_node->parent;
 
-			if (main_node->left){//left->right로..
+			if (main_node->left){
 				left_node->right = main_node->left;
 				main_node->left->parent = left_node;
 			}
@@ -493,55 +495,30 @@ namespace ft{
 			left_node->max_depth -= 2;
 			right_node->max_depth -= 1;
 			return (main_node);
-
 		}
 		
-		void depth_update_preorder(pointer i_node, int root_value){
-			if (!i_node)
-				return ;
-			if (i_node->left || i_node->right)
-			{
-				i_node->max_depth = root_value;
-				if (i_node->left)
-					depth_update_preorder(i_node->left, root_value - 1);
-				if (i_node->right)
-					depth_update_preorder(i_node->right, root_value - 1);
-			}
-		}
-
 		void depth_update(pointer i_node, int root_value){
-			
-			//root_value--;
-			//depth_update_preorder(i_node, root_value);
-			//std::cout << "root_value" << root_value << std::endl;
-
 			pointer i_parent = i_node->parent;
 			while (i_parent != _dummy)
 			{
-				if (i_node == i_parent->left)
-				{
-					if (i_parent->right && i_parent->right->max_depth >= root_value)
+				if (i_node == i_parent->left && i_parent->right && i_parent->right->max_depth >= root_value)
 						break;
-				}																									
-				else if (i_node == i_parent->right)
-				{
-					if (i_parent->left && i_parent->left->max_depth >= root_value)
+				else if (i_node == i_parent->right && i_parent->left && i_parent->left->max_depth >= root_value)
 						break;
-				}
 				i_parent->max_depth = root_value;
 				i_node = i_node->parent;
 				i_parent = i_parent->parent;
 				root_value++;
 			}
-			// i_node 기준 중위 순회로 돌면서 root_value -1 씩
-			// i_node 부모들은 root_value + 1씩
-
 		};
 
-
+		// 1. 삽입한 노드부터 root까지 depth갱신 해주기.(부모 노드가 지금 노드와 같은 depth일 때만 갱신)
+		// 2. LL, LR, RL, RR 등 로테이트 수행
+		// 	 LL은 오른쪽 노드 depth -2, RR은 왼쪽 노드 depth -2
+		// 	 LR은 RR수행하는 두 노드 depth를 먼저 하나씩 증가시킨 후 RR, LL 수행(RL은 반대로)
+		// 3. 리밸런싱 후 부모 노드들의 depth 갱신(리밸런싱 노드 기준으로 형제노드 값이 작을 때만 부모 depth를 --한다.)
 		void rebalance(pointer insert_node)
 		{
-			//node max_depth 갱신
 			pointer i_node = insert_node;
 			int depth = insert_node->max_depth;
 			while (i_node != _dummy)
@@ -562,7 +539,6 @@ namespace ft{
 					break;
 				i_node = i_node->parent;
 			}
-			//std::cout << "root" << _root->max_depth << std::endl;
 			if (i_node == _dummy)
 				return ;
 			if (insu > 1)
@@ -572,24 +548,20 @@ namespace ft{
 					depth_update(LL(i_node), root_depth);
 				else
 					depth_update(LR(i_node), root_depth);
+				
 			}
 			else if (insu < -1)
 			{
 				int root_depth = i_node->max_depth;
-				//pointer tmp_parent = i_node->parent;
 
-				if (height_diff(i_node->right) >= 0)
-				{
+				if (height_diff(i_node->right) > 0)
 					depth_update(RL(i_node), root_depth);
-				}else{
+				else
 					depth_update(RR(i_node), root_depth);
-				}
-					//depth_update(tmp_parent->right, root_depth);
 			}
 			_root = _dummy->left;
 		}
 		
-
 		ft::pair<treeIterator<T>, bool> insert(const T &insert_pair){
 			pointer where = search(insert_pair);
 			pointer insert_node = NULL;
@@ -599,10 +571,10 @@ namespace ft{
 			insert_node = _alloc.allocate(1);
 			if (where == _dummy)
 			{
-				_alloc.construct(insert_node, node<T>(insert_pair, where, NULL, NULL, 0));
+				_alloc.construct(insert_node, node<T>(insert_pair, where, NULL, NULL, 1));
 				_root = insert_node;
 				_dummy->left = _root;
-				insert_node->max_depth++;
+				//insert_node->max_depth++;
 				return(pair<treeIterator<T>, bool>(treeIterator<T>(insert_node), true));
 			}
 			if (_comp(where->value.first, insert_pair.first))
@@ -673,6 +645,165 @@ namespace ft{
 			}
 			return (tmp);
 		}
+		
+		pointer erase_LL(pointer i_node){
+			//메인노드에 오른쪽 노드가 있는 케이스를 추가하기 이 경우 main + 1, right - 1
+			//위 케이스 이외의 경우는 erase_depth_update하기.. 그냥 여기서 해주기...
+			int depth = i_node->max_depth;
+			pointer main_node = i_node->left;
+			pointer right_node = i_node;
+			pointer left_node = i_node->left->left;
+
+			int flag = 0;
+			if (main_node->right && main_node->right->max_depth == left_node->max_depth)//left depth, right depth 같을 경우
+				flag = 1;
+			//main 노드의 right가 있고, left노드에 자식이 없는 상황에서는 main +1, right -1 뎁스 조절 X
+			//
+			if (i_node->parent->left == i_node)
+				i_node->parent->left = main_node;
+			else if(i_node->parent->right == i_node)
+				i_node->parent->right = main_node;
+			main_node->parent = i_node->parent;
+
+			if (main_node->right)
+			{
+				right_node->left = main_node->right;
+				main_node->right->parent = right_node;
+			}
+			else
+				right_node->left = NULL;
+			
+			main_node->left = left_node;
+			left_node->parent = main_node;
+			main_node->right = right_node;
+			right_node->parent = main_node;
+
+			if (flag == 1)
+			{
+				main_node->max_depth += 1;
+				right_node->max_depth -= 1;
+				return (main_node);
+			}
+
+			right_node->max_depth -= 2;
+			depth_update(main_node, depth);
+			return (main_node);
+		};
+
+		pointer erase_RR(pointer i_node){
+		//동일함 main + 1, left -1
+			int depth = i_node->max_depth;
+
+			pointer main_node = i_node->right;
+			pointer left_node = i_node;
+			pointer right_node = i_node->right->right;
+			int flag = 0;
+			if (main_node->left && main_node->left->max_depth == right_node->max_depth)
+				flag = 1;
+			//
+			if (i_node->parent->left == i_node)
+				i_node->parent->left = main_node;
+			else if(i_node->parent->right == i_node)
+				i_node->parent->right = main_node;
+			main_node->parent = i_node->parent;
+
+			if (main_node->left)
+			{
+				left_node->right = main_node->left;
+				main_node->left->parent = left_node;
+			}
+			else
+				left_node->right = NULL;
+			
+			main_node->left = left_node;
+			left_node->parent = main_node;
+			main_node->right = right_node;
+			right_node->parent = main_node;
+
+			if (flag == 1)
+			{
+				main_node->max_depth += 1;
+				left_node->max_depth -= 1;
+				return (main_node);
+			}
+
+			left_node->max_depth -= 2;
+			depth_update(main_node, depth);
+			return (main_node);
+			
+		};
+		 
+		// void erase_depth_update(pointer p_root){
+		// 	while (p_root != _dummy)
+		// 	{
+		// 		if (p_root->parent->left == p_root && p_root->parent->right && p_root->max_depth <= p_root->parent->right->max_depth)
+		// 			break;
+		// 		else if (p_root->parent->right == p_root && p_root->parent->left && p_root->max_depth <= p_root->parent->left->max_depth)
+		// 			break;
+		// 		p_root = p_root->parent;
+		// 		if (p_root == _dummy)
+		// 			return ;
+		// 		p_root->max_depth--;
+		// 	}
+		// }
+		void erase_rebalance(pointer i_node)
+		{
+			pointer i = i_node;
+			// if (i_node->left)
+			// {
+			// 	if (i_node->max_depth - i_node->left->max_depth < 1)
+			// 		std::cout << "왼쪽 으아아아아악!!!" << std::endl;
+			// }
+			// if (i_node->right)
+			// {
+			// 	if (i_node->max_depth - i_node->right->max_depth < 1)
+			// 		std::cout << "오른쪽 으아아아아악!!!" << std::endl;
+			// }
+			while (i != _dummy)
+			{
+				int insu = 0;
+				while (i_node != _dummy)
+				{
+					insu = height_diff(i_node);
+					if ((insu > 1 || insu < -1))
+						break;
+					i_node = i_node->parent;
+				}
+				if (i_node == _dummy)
+				{
+					i = i->parent;
+					continue;
+				}
+				if (insu > 1)
+				{
+					int root_depth = i_node->max_depth;
+					if (height_diff(i_node->left) >= 0)
+					{
+						std::cout << "LL" << std::endl;
+						erase_LL(i_node);
+					}else{
+						std::cout << "LR" << std::endl;
+						depth_update(LR(i_node), root_depth);
+					}
+				}
+				else if (insu < -1)
+				{
+					int root_depth = i_node->max_depth;
+
+					if (height_diff(i_node->right) > 0){
+						std::cout << "RL" << std::endl;
+						depth_update(RL(i_node), root_depth);
+					}
+					else{
+						std::cout << "RR" << std::endl;
+						erase_RR(i_node);
+					}
+				}
+				_root = _dummy->left;
+				i = i->parent;
+			}
+		}
+
 		size_type erase (const T& k_pair){
 			pointer tmp = find(k_pair).base();
 			if (tmp == end().base())
@@ -685,18 +816,24 @@ namespace ft{
 				_root = NULL;
 				return 1;
 			}
-			//노드 destroy, deallocate, _dummy->left = NULL;
 			if (tmp->left == NULL && tmp->right == NULL)
 			{
+				//erase_depth_update(tmp);
+				depth_update(tmp, tmp->max_depth);
+				pointer rebalance_tmp = tmp->parent;//대체 노드, 없으면 그 부모...
 				if (tmp->parent->left == tmp)
 					tmp->parent->left = NULL;
 				else
 					tmp->parent->right = NULL;
 				_alloc.destroy(tmp);
 				_alloc.deallocate(tmp, 1);
-			}//지울 노드의 자식이 없다면 -> 부모자식 연 끊고 free
+				erase_rebalance(rebalance_tmp);
+			}
 			else if (tmp->left != NULL && tmp->right == NULL)
 			{
+				//erase_depth_update(tmp);
+				depth_update(tmp, tmp->max_depth);
+				pointer rebalance_tmp = tmp->parent;
 				if (tmp->parent->left == tmp)
 					tmp->parent->left = tmp->left;
 				else
@@ -706,9 +843,13 @@ namespace ft{
 					_root = tmp->left;
 				_alloc.destroy(tmp);
 				_alloc.deallocate(tmp, 1);
+				erase_rebalance(rebalance_tmp);
 			}
 			else if (tmp->left == NULL && tmp->right != NULL)
-			{//right만..
+			{
+				//erase_depth_update(tmp);
+				depth_update(tmp, tmp->max_depth);
+				pointer rebalance_tmp = tmp->parent;
 				if (tmp->parent->left == tmp)
 					tmp->parent->left = tmp->right;
 				else
@@ -718,12 +859,16 @@ namespace ft{
 					_root = tmp->right;
 				_alloc.destroy(tmp);
 				_alloc.deallocate(tmp, 1);
+				erase_rebalance(rebalance_tmp);
 			}
 			else
 			{
 				iterator tmp2(tmp);
 				--tmp2;
 				pointer left_max = tmp2.base();
+				depth_update(left_max, left_max->max_depth);
+				//erase_depth_update(left_max);
+				pointer rebalance_tmp = left_max->parent;
 				tmp->value = left_max->value;
 				if (left_max->left != NULL)
 				{
@@ -732,10 +877,8 @@ namespace ft{
 					else
 						left_max->parent->right = left_max->left;
 					left_max->left->parent = left_max->parent;
-					// 부모의 자식은 교환노드의 왼쪽자식으로 해주기,
-					// 교환노드 왼쪽 자식의 부모는 부모로 해주기.
 				}
-				else//자식이 없다?
+				else
 				{
 					if (left_max->parent->left == left_max)
 						left_max->parent->left = NULL;
@@ -744,8 +887,8 @@ namespace ft{
 				}
 				_alloc.destroy(left_max);
 				_alloc.deallocate(left_max, 1);
+				erase_rebalance(rebalance_tmp);
 			}
-			//지울 노드의 자식이 두개라면 -> 왼쪽에서 최댓값과 교환, 교환노드가 자식 있으면 교환노드의 부모와 연결후 교환노드는 free
 			return 1;
 		}
 		void clear(){
@@ -774,24 +917,20 @@ namespace ft{
 			_dummy->left = NULL;
 		}
 		iterator lower_bound(const T &pair) {
-			//k 보다 같거나 큰 값 이터 반환
 			iterator i = begin();
 			while (i != end())
 			{
 				if (!(_comp(i->first, pair.first)))
-				//if (i->first >= pair.first)
 					return (i);
 				i++;
 			}
 			return (i);
 		}
 		const_iterator lower_bound(const T &pair) const{
-			//k 보다 같거나 큰 값 이터 반환
 			const_iterator i = begin();
 			while (i != end())
 			{
 				if (!(_comp(i->first, pair.first)))
-				//if (i->first >= pair.first)
 					return (i);
 				i++;
 			}
@@ -802,7 +941,6 @@ namespace ft{
 			while (i != end())
 			{
 				if ((_comp(pair.first, i->first)))
-				//if (i->first > pair.first)
 					return (i);
 				i++;
 			}
@@ -813,7 +951,6 @@ namespace ft{
 			while (i != end())
 			{
 				if ((_comp(pair.first, i->first)))
-				//if (i->first > pair.first)
 					return (i);
 				i++;
 			}
@@ -838,9 +975,9 @@ namespace ft{
 
 		private : 
 		alloc _alloc;
-		pointer _root;//
-		pointer _dummy;//
-		Compare _comp;//
+		pointer _root;
+		pointer _dummy;
+		Compare _comp;
 	};
 
 	template < class Key, class T, class Compare = std::less<Key>, class Alloc = std::allocator<ft::pair<const Key,T> > >
