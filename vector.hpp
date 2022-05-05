@@ -21,7 +21,7 @@ namespace ft
 
 		vectorIterator() : _ptr() {}
 		explicit vectorIterator(pointer a) : _ptr(a) {}
-		template <class Iter>//복사생성자
+		template <class Iter>
 		vectorIterator(const vectorIterator<Iter> &rev_it) : _ptr(rev_it.base()) {}
 		vectorIterator &operator=(const vectorIterator &x){
 			_ptr = x.base();
@@ -120,22 +120,20 @@ namespace ft
 	public :
 		typedef T value_type;
 		typedef Allocator allocator_type;
-		typedef typename allocator_type::reference reference;                   // value_type&
-		typedef typename allocator_type::const_reference const_reference;       // const value_type&
-		typedef typename allocator_type::pointer pointer;                       // Allocator::pointer
-		typedef typename allocator_type::const_pointer const_pointer;           // Allocator::const_pointer
-		typedef typename ft::vectorIterator<T> iterator;                            // LegacyRandomAccessIterator????
-		typedef typename ft::vectorIterator<const T> const_iterator;                //"
-		typedef typename ft::reverse_iterator<iterator> reverse_iterator;             //"
-		typedef typename ft::reverse_iterator<const_iterator> const_reverse_iterator; //"
-		typedef typename std::ptrdiff_t difference_type;                        // std::ptrdiff_t
-		typedef typename std::size_t size_type;                                 // std::size_t
+		typedef typename allocator_type::reference reference;
+		typedef typename allocator_type::const_reference const_reference;
+		typedef typename allocator_type::pointer pointer;
+		typedef typename allocator_type::const_pointer const_pointer;
+		typedef typename ft::vectorIterator<T> iterator;
+		typedef typename ft::vectorIterator<const T> const_iterator;
+		typedef typename ft::reverse_iterator<iterator> reverse_iterator;
+		typedef typename ft::reverse_iterator<const_iterator> const_reverse_iterator;
+		typedef typename std::ptrdiff_t difference_type;
+		typedef typename std::size_t size_type;
 
-		// Basic member function vector
 		explicit vector(const allocator_type &alloc = allocator_type()){
 			_alloc = alloc;
-			//_start = nullptr;//define 하기
-			_start = _alloc.allocate(0);			
+			_start = nullptr;
 			_size = 0;
 			_capacity = 0;
 		};
@@ -164,28 +162,22 @@ namespace ft
 				_alloc.destroy(_start + i);
 				i++;
 			}
-			if (_capacity > 0)
-				_alloc.deallocate(0, _capacity);
+			if (_capacity > 0){
+				_alloc.deallocate(_start, _capacity);
+			}
 		};
 		vector& operator= (const vector& x){
-			//먼저 있는 거 다 비워주고
-			size_type i = 0;
-			while (i < _size)
-			{
-				_alloc.destroy(_start + i);
-				i++;
-			}
-			//새로 allocate(x size)하고 construct(x 하나씩)하고~ size랑 capacity 초기화하고 끝~!
-			clear();
-			//if (_capacity != 0)
-			//	_alloc.deallocate(_start, _capacity);
+			if (_size > 0)
+				clear();
+			if (_capacity > 0)
+				_alloc.deallocate(_start, _capacity);
 			if (_capacity < x.capacity())
 			{
 				_start = _alloc.allocate(x._size);
 				_capacity = x._size;
 			}
 			_size = x._size;
-			i = 0;
+			size_type i = 0;
 			while (i < x._size)
 			{
 				_alloc.construct(_start + i, x[i]);
@@ -193,7 +185,7 @@ namespace ft
 			}
 			return (*this);
 		};
-		// Iterators
+
 		iterator begin(){return (iterator(_start));}
 		const_iterator begin() const {return (const_iterator(_start));}
 		iterator end(){return (iterator(_start + _size));}
@@ -203,12 +195,9 @@ namespace ft
 		reverse_iterator rend(){return (reverse_iterator(begin()));}
 		const_reverse_iterator rend() const {return (const_reverse_iterator(begin()));}
 
-		// Capacity
 		size_type size() const{return (_size);}
 		size_type max_size() const{return (_alloc.max_size());}
 		void resize (size_type n, value_type val = value_type()){
-			//n이 사이즈보다 작으면 파괴, 크면 늘리고 val로 채우기
-			//cpct 생각해서.. n이 cpct보다 크면.... 할당...
 			size_type i = 0;
 			if (n < _size)
 			{
@@ -222,8 +211,7 @@ namespace ft
 			}
 			else if (n > _size)
 			{
-				//reserve~~~~
-				if (_capacity < n && n < _capacity * 2)//_capacity =< _size + n < _capacity * 2
+				if (_capacity < n && n < _capacity * 2)
 				{
 					_capacity *= 2;
 					reserve(_capacity);
@@ -244,7 +232,7 @@ namespace ft
 		size_type capacity() const{return (_capacity);}
 		bool empty() const{ return (_size == 0);}
 		void reserve(size_type n){
-			if (_capacity >= n)//이미 충분한 capacity는 필요 없음...
+			if (_capacity >= n)
 				return ;
 			pointer new_start;
 			new_start = _alloc.allocate(n);
@@ -260,23 +248,21 @@ namespace ft
 			_capacity = n;
 		}
 
-		// Element access
 		reference operator[](size_type n){return (*(_start + n));}
 		const_reference operator[](size_type n) const{return (*(_start + n));}
 		reference at(size_type n){
 			if(n > _capacity)
-				throw std::out_of_range("test");
+				throw std::out_of_range("out_of_range");
 			return (*(_start + n));}
 		const_reference at(size_type n) const{
 			if(n > _capacity)
-				throw std::out_of_range("test");
+				throw std::out_of_range("out_of_range");
 			return (*(_start + n));}
 		reference front(){return *(_start);}
 		const_reference front() const {return *(_start);}
 		reference back(){return *(_start + _size - 1);}
 		const_reference back() const{ return *(_start + _size - 1);}
 
-		// Modifiers
 		void assign (size_type n, const value_type& val){
 			size_type i = 0;
 			while (i < _size)
@@ -296,7 +282,6 @@ namespace ft
 		};
 		template <class InputIterator>
 		void assign(InputIterator first, InputIterator last, typename enable_if<!is_integral<InputIterator>::value>::type* = 0){
-			//새 벡터 크기 가 현재 벡터 용량을 초과하는 경우에만 할당된 저장 공간이 자동으로 재할당됩니다.
 			size_type i = 0;
 			while (i < _size)
 			{
@@ -341,7 +326,7 @@ namespace ft
 				_alloc.destroy(_start + i);
 				i++;
 			}
-			_alloc.deallocate(_start, _size);//옛날 capacity로 고쳐야 함
+			_alloc.deallocate(_start, _size);
 			_size++;
 			_start = new_alloc;
 			return (iterator(new_alloc + new_position));
@@ -351,7 +336,7 @@ namespace ft
 
 			if (_capacity == 0)
 				_capacity = n;
-			else if (_capacity < _size + n && _size + n < _capacity * 2)//_capacity =< _size + n < _capacity * 2
+			else if (_capacity < _size + n && _size + n < _capacity * 2)
 				_capacity *= 2;
 			else if (_size + n > _capacity * 2)
 				_capacity = _size + n;
@@ -368,7 +353,7 @@ namespace ft
 				_alloc.destroy(_start + i);
 				i++;
 			}
-			_alloc.deallocate(_start, old_capacity);//옛날 카파시티로 고쳐야 함
+			_alloc.deallocate(_start, old_capacity);
 			_start = new_alloc;
 			_size += n;
 		}
@@ -400,8 +385,6 @@ namespace ft
 
 		};
 		iterator erase(iterator position){
-			//position위치까지는 그대로 스킵하고,
-			//position부터 destroy하고 한 칸씩 땡겨서 construct
 			size_type i = 0;
 			while (position + i != end())
 			{
@@ -411,10 +394,9 @@ namespace ft
 			}
 			_alloc.destroy(position.base() + i);
 			_size--;
-			return (iterator(_start) + (position - begin()));//지워진 요소 바로 다음~
+			return (iterator(_start) + (position - begin()));
 		}
 		iterator erase(iterator first, iterator last){
-			//first ~ last 지워용
 			size_type i = 0;
 			
 			while (first + i != end())
@@ -433,7 +415,6 @@ namespace ft
 			std::swap(_capacity, x._capacity);
 		}
 		void clear(){
-			//다 destroy하고 size 0
 			size_type i = 0;
 			while (i < _size)
 			{
@@ -443,16 +424,15 @@ namespace ft
 			_size = 0;
 		};
 		
-		//Allocator
 		Allocator get_allocator() const {return _alloc;}
 
 	private:
 		allocator_type _alloc;
 		pointer _start;
-		size_type _size;//저장된 원소의 수
-		size_type _capacity;//할당된 공간의 크기
+		size_type _size;
+		size_type _capacity;
 	};
-	// Non-member functions
+
 	template <class T, class Alloc>
 	bool operator==(const ft::vector<T, Alloc> &lhs, const ft::vector<T, Alloc> &rhs){
 		if (lhs.size() != rhs.size())

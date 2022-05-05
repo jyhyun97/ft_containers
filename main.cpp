@@ -2,7 +2,7 @@
 #include <string>
 #include <deque>
 
-#if 1 //CREATE A REAL STL EXAMPLE
+#if 0 //CREATE A REAL STL EXAMPLE
 	#include <map>
 	#include <stack>
 	#include <vector>
@@ -46,7 +46,7 @@ public:
 	iterator end() { return this->c.end(); }
 };
 
-int main(int argc, char** argv) {
+int func_main(int argc, char** argv) {
 	if (argc != 2)
 	{
 		std::cerr << "Usage: ./test seed" << std::endl;
@@ -116,39 +116,97 @@ int main(int argc, char** argv) {
 	return (0);
 }
 
-/*
+void func_vector(){
+	ft::vector<std::string> my_vector;
+
+	std::cout << "****** basic test ******" << std::endl;
+	my_vector.push_back("hello world");
+	my_vector.push_back("world hello");
+	std::cout << my_vector.front() << std::endl;
+	std::cout << my_vector.back() << std::endl;
+	my_vector.insert(my_vector.end(), "insert end");
+	my_vector.insert(my_vector.begin(), "insert begin");
+	std::cout << my_vector.back() << std::endl;
+	std::cout << "size : " << my_vector.size() << " capacity: " << my_vector.capacity() << std::endl;
+	my_vector.erase(my_vector.begin());
+	my_vector.pop_back();
+	std::cout << "size : " << my_vector.size() << " capacity: " << my_vector.capacity() << std::endl;
+	
+	std::cout << "****** iterator ******" << std::endl;
+	ft::vector<std::string> copy_vector(my_vector);
+	ft::vector<std::string>::iterator it = copy_vector.begin();
+	while (it != copy_vector.end())
+	{
+		std::cout << "copy vector : " << *it << std::endl;
+		it++;
+	}
+	my_vector.clear();
+	it = copy_vector.begin();
+	while (it != copy_vector.end())
+	{
+		std::cout << "copy vector after empty my_vector : " << *it << std::endl;
+		it++;
+	}
+	std::cout << "****** relational function ******" << std::endl;
+	std::cout << "T/F test == : " << (copy_vector == my_vector) << std::endl;
+	std::cout << "T/F test != : "  <<  (copy_vector != my_vector) << std::endl;
+	std::cout << "T/F test == < "  << (copy_vector < my_vector) << std::endl;
+	std::cout << "T/F test == > "  << (copy_vector > my_vector) << std::endl;
+}
+
+void func_stack(){
+	ft::stack<std::string> my_stack;
+	my_stack.push("push1");
+	my_stack.push("push2");
+	my_stack.push("push3");
+	std::cout << "top : " << my_stack.top() << std::endl;
+	std::cout << "size : " << my_stack.size() << std::endl;
+	my_stack.pop();
+	my_stack.pop();
+	std::cout << "top : " << my_stack.top() << std::endl;
+	std::cout << "size : " << my_stack.size() << std::endl;
+}
+
+void func_map(){
+	ft::map<int, int> my_map;
+	my_map.insert(ft::make_pair<int, int>(1, 0));
+	my_map.insert(ft::make_pair<int, int>(2, 0));
+	my_map.insert(ft::make_pair<int, int>(5, 0));
+	my_map.insert(ft::make_pair<int, int>(4, 0));
+	my_map.insert(ft::make_pair<int, int>(3, 0));
+	
+	ft::map<int, int>::iterator it = my_map.begin();
+	while (it != my_map.end())
+	{
+		std::cout << "first : " << it->first << ", second : " << it->second << std::endl;
+		it++;
+	}
+	std::cout << "before erase : " << my_map.find(3)->first << std::endl;
+	my_map.erase(3);
+	std::cout << "after erase : " << my_map.find(3)->first << std::endl;
+	std::cout << "lower_bound : " << my_map.lower_bound(2)->first << std::endl;
+	std::cout << "upper bound : "<< my_map.upper_bound(2)->first << std::endl;
+	my_map.clear();
+	it = my_map.begin();
+	while (it != my_map.end())
+	{
+		std::cout << "first : " << it->first << ", second : " << it->second << std::endl;
+		it++;
+	}
+}
+
 int main(int argc, char **argv)
 {
-	if (argc != 2)
-	 	return (0);
-	ft::map<int, int> test;
-	
-	srand(atoi(argv[1]));
+	if (func_main(argc, argv) == 1)
+		return 1;
+	std::cout << "--------------- vector test ---------------" << std::endl;
+	func_vector();
 
-	for (int i = 0; i < 1000000; i++)
-	{
-		test.insert(ft::make_pair<int, int>(rand(), 1));
-	}
-	//ft::map<int, int>::iterator it = test.begin();
-	for (int i = 0; i < 1000000; i++)
-	{
-		test.erase(test.begin());
-	}
+	std::cout << "--------------- stack test ---------------" << std::endl;
+	func_stack();
 
-	// test.insert(ft::make_pair<int, int>(5, 1));
-	// test.insert(ft::make_pair<int, int>(3, 1));
-	// test.insert(ft::make_pair<int, int>(8, 1));
-	// test.insert(ft::make_pair<int, int>(2, 1));
-	// test.insert(ft::make_pair<int, int>(4, 1));
-	// test.insert(ft::make_pair<int, int>(7, 1));
-	// test.insert(ft::make_pair<int, int>(10, 1));
-	// test.insert(ft::make_pair<int, int>(1, 1));
-	// test.insert(ft::make_pair<int, int>(6, 1));
-	// test.insert(ft::make_pair<int, int>(9, 1));
-	// test.insert(ft::make_pair<int, int>(11, 1));
-	// test.insert(ft::make_pair<int, int>(12, 1));
-	// test.erase(4);
+	std::cout << "--------------- map test ---------------" << std::endl;
+	func_map();
 
 	return (0);
 }
-*/

@@ -5,7 +5,7 @@
 
 namespace ft
 {
-    template <class T, class Container = ft::vector<T> >//
+    template <class T, class Container = ft::vector<T> >
     class stack{
         public :
         typedef T value_type;
@@ -58,7 +58,7 @@ namespace ft
         return !(lhs < rhs);
     };
 
-} // namespace ft
+}
 
 
 
