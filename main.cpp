@@ -152,6 +152,13 @@ void func_vector(){
 	std::cout << "T/F test != : "  <<  (copy_vector != my_vector) << std::endl;
 	std::cout << "T/F test == < "  << (copy_vector < my_vector) << std::endl;
 	std::cout << "T/F test == > "  << (copy_vector > my_vector) << std::endl;
+
+	ft::vector<int> A(1, 3);
+	ft::vector<int>::iterator it1 = A.begin();
+	ft::vector<int>::iterator it2 = A.end();
+	
+	std::cout << (it1 < it2) << std::endl;
+	std::cout << (it2 < it1) << std::endl;
 }
 
 void func_stack(){

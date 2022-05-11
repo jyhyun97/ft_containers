@@ -35,6 +35,112 @@ namespace ft
         typedef std::random_access_iterator_tag iterator_category;
     };
 
+    template <class Iterator>
+	class vectorIterator
+	{
+		public :
+		typedef Iterator												iterator_type;
+		typedef typename iterator_traits<Iterator *>::difference_type	difference_type;
+		typedef typename iterator_traits<Iterator *>::value_type		value_type;
+		typedef typename iterator_traits<Iterator *>::pointer			pointer;
+		typedef typename iterator_traits<Iterator *>::reference			reference;
+		typedef typename iterator_traits<Iterator *>::iterator_category	iterator_category;
+
+		vectorIterator() : _ptr() {}
+		explicit vectorIterator(pointer a) : _ptr(a) {}
+		template <class Iter>
+		vectorIterator(const vectorIterator<Iter> &rev_it) : _ptr(rev_it.base()) {}
+		vectorIterator &operator=(const vectorIterator &x){
+			_ptr = x.base();
+			return (*this);
+		}
+		pointer base() const {
+			return (_ptr);
+		}
+		reference operator*() const {
+			return (*_ptr);
+		}
+		pointer operator->() const {
+			return &(this->operator*());
+		}
+		vectorIterator& operator++() {
+			++_ptr;
+			return (*this);
+		}
+		vectorIterator operator++(int) {
+			vectorIterator tmp(*this);
+			++_ptr;
+			return (tmp); 
+		}
+		vectorIterator& operator--(){
+			--_ptr;
+			return (*this);
+		}
+		vectorIterator operator--(int){
+			vectorIterator tmp(*this);
+			--_ptr;
+			return (tmp);
+		}
+		vectorIterator operator+ (const difference_type &n) const {
+			return (vectorIterator(_ptr + n));
+		}
+		vectorIterator &operator+= (const difference_type &n){
+			_ptr += n;
+			return (*this);
+		}
+		vectorIterator operator- (const difference_type &n) const {
+			return (vectorIterator(_ptr - n));
+		}
+		vectorIterator &operator-= (const difference_type &n){
+			_ptr -= n;
+			return (*this);
+		}
+		reference operator[](difference_type n) const {
+			return *(_ptr + n);
+		}
+		private :
+			pointer _ptr;
+	};
+
+	template <class T>
+	bool operator!=(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
+			return (lhs.base() != rhs.base());
+	}
+
+	template <class T>
+	bool operator==(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
+			return (lhs.base() == rhs.base());
+	}
+	template <class T>
+	bool operator>(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
+			return (lhs.base() > rhs.base());
+	}
+	template <class T>
+	bool operator<(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
+			return (lhs.base() < rhs.base());
+	}
+	template <class T>
+	bool operator>=(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
+			return (lhs.base() >= rhs.base());
+	}
+	template <class T>
+	bool operator<=(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
+			return (lhs.base() <= rhs.base());
+	}
+	template <class Iterator>
+	ft::vectorIterator<Iterator> operator+(
+		typename ft::vectorIterator<Iterator>::difference_type n,
+		const ft::vectorIterator<Iterator> &rev_it){
+			return (rev_it + n);
+	};
+
+	template <class Iterator>
+	typename ft::vectorIterator<Iterator>::difference_type operator-(
+		const ft::vectorIterator<Iterator> &lhs,
+		const ft::vectorIterator<Iterator> &rhs){
+			return (lhs.base() - rhs.base());
+	};
+
     //enable_if//컴파일러가 올바른 오버로딩 함수 타입을 찾기 위해, 해당하지 않는 함수는 타입 치환 오류를 발생시켜야 함.
     //T가 존재하는 타입이라면 type가 반환되고, 없으면 반환되지 않는 원리.
     template<bool B, class T = void>

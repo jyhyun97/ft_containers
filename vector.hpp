@@ -8,112 +8,6 @@
 
 namespace ft
 {
-	template <class Iterator>
-	class vectorIterator
-	{
-		public :
-		typedef Iterator												iterator_type;
-		typedef typename iterator_traits<Iterator *>::difference_type	difference_type;
-		typedef typename iterator_traits<Iterator *>::value_type		value_type;
-		typedef typename iterator_traits<Iterator *>::pointer			pointer;
-		typedef typename iterator_traits<Iterator *>::reference			reference;
-		typedef typename iterator_traits<Iterator *>::iterator_category	iterator_category;
-
-		vectorIterator() : _ptr() {}
-		explicit vectorIterator(pointer a) : _ptr(a) {}
-		template <class Iter>
-		vectorIterator(const vectorIterator<Iter> &rev_it) : _ptr(rev_it.base()) {}
-		vectorIterator &operator=(const vectorIterator &x){
-			_ptr = x.base();
-			return (*this);
-		}
-		pointer base() const {
-			return (_ptr);
-		}
-		reference operator*() const {
-			return (*_ptr);
-		}
-		pointer operator->() const {
-			return &(this->operator*());
-		}
-		vectorIterator& operator++() {
-			++_ptr;
-			return (*this);
-		}
-		vectorIterator operator++(int) {
-			vectorIterator tmp(*this);
-			++_ptr;
-			return (tmp); 
-		}
-		vectorIterator& operator--(){
-			--_ptr;
-			return (*this);
-		}
-		vectorIterator operator--(int){
-			vectorIterator tmp(*this);
-			--_ptr;
-			return (tmp);
-		}
-		vectorIterator operator+ (const difference_type &n) const {
-			return (vectorIterator(_ptr + n));
-		}
-		vectorIterator &operator+= (const difference_type &n){
-			_ptr += n;
-			return (*this);
-		}
-		vectorIterator operator- (const difference_type &n) const {
-			return (vectorIterator(_ptr - n));
-		}
-		vectorIterator &operator-= (const difference_type &n){
-			_ptr -= n;
-			return (*this);
-		}
-		reference operator[](difference_type n) const {
-			return *(_ptr + n);
-		}
-		private :
-			pointer _ptr;
-	};
-
-	template <class T>
-	bool operator!=(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
-			return (lhs.base() != rhs.base());
-	}
-
-	template <class T>
-	bool operator==(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
-			return (lhs.base() == rhs.base());
-	}
-	template <class T>
-	bool operator>(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
-			return (lhs.base() > rhs.base());
-	}
-	template <class T>
-	bool operator<(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
-			return (lhs.base() < rhs.base());
-	}
-	template <class T>
-	bool operator>=(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
-			return (lhs.base() >= rhs.base());
-	}
-	template <class T>
-	bool operator<=(const ft::vectorIterator<T> &lhs, const ft::vectorIterator<T> &rhs){
-			return (lhs.base() <= rhs.base());
-	}
-	template <class Iterator>
-	ft::vectorIterator<Iterator> operator+(
-		typename ft::vectorIterator<Iterator>::difference_type n,
-		const ft::vectorIterator<Iterator> &rev_it){
-			return (rev_it + n);
-	};
-
-	template <class Iterator>
-	typename ft::vectorIterator<Iterator>::difference_type operator-(
-		const ft::vectorIterator<Iterator> &lhs,
-		const ft::vectorIterator<Iterator> &rhs){
-			return (lhs.base() - rhs.base());
-	};
-
 	template <class T, class Allocator = std::allocator<T> >
 	class vector
 	{
@@ -133,7 +27,7 @@ namespace ft
 
 		explicit vector(const allocator_type &alloc = allocator_type()){
 			_alloc = alloc;
-			_start = nullptr;
+			_start = NULL;
 			_size = 0;
 			_capacity = 0;
 		};
@@ -275,7 +169,7 @@ namespace ft
 				if (_capacity > 0)
 					_alloc.deallocate(_start, _capacity);
 				_start = _alloc.allocate(n);
-				_capacity = n;//
+				_capacity = n;
 			}
 			_size = n;
 			std::uninitialized_fill(_start, _start + n, val);
@@ -293,7 +187,7 @@ namespace ft
 				if (_capacity > 0)
 					_alloc.deallocate(_start, _capacity);
 				_start = _alloc.allocate(std::distance(first, last));
-				_capacity = std::distance(first, last);//
+				_capacity = std::distance(first, last);
 			}
 			std::uninitialized_copy(first, last, _start);
 			_size = std::distance(first, last);
